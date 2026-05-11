@@ -5,6 +5,17 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v1.3.0] — 2025-05-11
+
+### Added
+- **Purchased toggle** — each part now has a ✓ button in the action row. Marking a part purchased gives it a green glowing border, dims and strikes through the name, and moves it to a separate "Purchased" section below the active list. Clicking ✓ again moves it back.
+- **Purchased Total** stat in the header box — shows the running dollar total and count of all purchased items alongside the existing Running Total and All Parts figures.
+
+### Fixed
+- **Card layout cleanup** - Category badge and View Part link are now pinned to the right side of each card in a consistent column, rather than flowing inline with the manufacturer/type text. Manufacturer and type remain on the left. Results in a cleaner, scannable list.
+
+---
+
 ## [v1.2.0] — 2025-05-11
 
 ### Added
@@ -13,6 +24,8 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Footer hint updated to reflect the new drag handle alongside the existing toggle instruction.
+
+---
 
 ## [v1.1.0] — 2025-05-11
 
