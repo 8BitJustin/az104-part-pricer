@@ -1,7 +1,7 @@
 {
   "name": "az104-part-pricer",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

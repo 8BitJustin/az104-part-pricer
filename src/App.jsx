@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const STORAGE_KEY = "car-task-pricer-parts";
 
@@ -106,6 +107,15 @@ export default function CarTaskPricer() {
   const deleteItem = (id) => setParts((prev) => prev.filter((p) => p.id !== id));
   const toggleItem = (id) =>
     setParts((prev) => prev.map((p) => (p.id === id ? { ...p, included: !p.included } : p)));
+
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+    if (result.destination.index === result.source.index) return;
+    const reordered = Array.from(parts);
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
+    setParts(reordered);
+  };
 
   return (
     <div style={{
@@ -465,171 +475,206 @@ export default function CarTaskPricer() {
             No parts yet — click &ldquo;Add Part&rdquo; to get started
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {parts.map((part) => (
-              <div
-                key={part.id}
-                className="cp-part-card"
-                style={{
-                  background: part.included ? "#111827" : "#0a0e16",
-                  border: `1px solid ${part.included ? "#1e2d4a" : "#12192e"}`,
-                  borderRadius: 8,
-                  padding: "14px 18px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  opacity: part.included ? 1 : 0.45,
-                  transition: "all 0.15s",
-                }}
-              >
-                {/* Toggle */}
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="parts-list">
+              {(provided) => (
                 <div
-                  className="cp-toggle"
-                  title={part.included ? "Exclude from total" : "Include in total"}
-                  onClick={() => toggleItem(part.id)}
-                  style={{
-                    flexShrink: 0,
-                    width: 34,
-                    height: 20,
-                    background: part.included ? "#06D6A0" : "#1a2840",
-                    border: `1px solid ${part.included ? "#06D6A0" : "#2a3a5a"}`,
-                    borderRadius: 10,
-                    position: "relative",
-                  }}
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
                 >
-                  <div style={{
-                    position: "absolute",
-                    width: 14,
-                    height: 14,
-                    background: part.included ? "#000" : "#4a5580",
-                    borderRadius: "50%",
-                    top: 2,
-                    left: part.included ? 17 : 2,
-                    transition: "left 0.2s",
-                  }} />
-                </div>
+                  {parts.map((part, index) => (
+                    <Draggable key={String(part.id)} draggableId={String(part.id)} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className="cp-part-card"
+                          style={{
+                            background: snapshot.isDragging ? "#1a2545" : part.included ? "#111827" : "#0a0e16",
+                            border: `1px solid ${snapshot.isDragging ? "#00B4D8" : part.included ? "#1e2d4a" : "#12192e"}`,
+                            borderRadius: 8,
+                            padding: "14px 18px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 14,
+                            opacity: part.included ? 1 : 0.45,
+                            boxShadow: snapshot.isDragging ? "0 8px 32px rgba(0,180,216,0.18)" : "none",
+                            transition: snapshot.isDragging ? "none" : "all 0.15s",
+                            ...provided.draggableProps.style,
+                          }}
+                        >
+                          {/* Drag Handle */}
+                          <div
+                            {...provided.dragHandleProps}
+                            title="Drag to reorder"
+                            style={{
+                              flexShrink: 0,
+                              color: "#2a3a5a",
+                              fontSize: 16,
+                              cursor: "grab",
+                              userSelect: "none",
+                              lineHeight: 1,
+                              paddingRight: 2,
+                            }}
+                          >
+                            ⠿
+                          </div>
 
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: part.included ? "#e8eaf0" : "#4a5580",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}>
-                    {part.name}
-                  </div>
-                  <div style={{ display: "flex", gap: 10, marginTop: 4, flexWrap: "wrap", alignItems: "center" }}>
-                    {part.manufacturer && (
-                      <span style={{ fontSize: 11, color: "#4a6a8a" }}>{part.manufacturer}</span>
-                    )}
-                    {part.type && (
-                      <span style={{ fontSize: 11, color: "#2a4a6a" }}>
-                        {part.manufacturer ? "· " : ""}{part.type}
-                      </span>
-                    )}
-                    {part.category && (
-                      <span style={{
-                        fontSize: 10,
-                        color: "#FFB703",
-                        background: "#1a1400",
-                        border: "1px solid #2a2000",
-                        borderRadius: 3,
-                        padding: "1px 6px",
-                        letterSpacing: 0.5,
-                      }}>{part.category}</span>
-                    )}
-                    {part.link && (
-                      <a
-                        href={part.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          fontSize: 10,
-                          color: "#00B4D8",
-                          background: "#001a28",
-                          border: "1px solid #002a3a",
-                          borderRadius: 3,
-                          padding: "1px 7px",
-                          textDecoration: "none",
-                          letterSpacing: 0.5,
-                        }}
-                      >
-                        ↗ View Part
-                      </a>
-                    )}
-                  </div>
-                </div>
+                          {/* Toggle */}
+                          <div
+                            className="cp-toggle"
+                            title={part.included ? "Exclude from total" : "Include in total"}
+                            onClick={() => toggleItem(part.id)}
+                            style={{
+                              flexShrink: 0,
+                              width: 34,
+                              height: 20,
+                              background: part.included ? "#06D6A0" : "#1a2840",
+                              border: `1px solid ${part.included ? "#06D6A0" : "#2a3a5a"}`,
+                              borderRadius: 10,
+                              position: "relative",
+                            }}
+                          >
+                            <div style={{
+                              position: "absolute",
+                              width: 14,
+                              height: 14,
+                              background: part.included ? "#000" : "#4a5580",
+                              borderRadius: "50%",
+                              top: 2,
+                              left: part.included ? 17 : 2,
+                              transition: "left 0.2s",
+                            }} />
+                          </div>
 
-                {/* Price */}
-                <div style={{
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontSize: 16,
-                  fontWeight: 700,
-                  color: part.included ? "#00B4D8" : "#2a3a5a",
-                  textDecoration: part.included ? "none" : "line-through",
-                  flexShrink: 0,
-                  whiteSpace: "nowrap",
-                }}>
-                  {fmt(part.price)}
-                </div>
+                          {/* Info */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{
+                              fontFamily: "'Space Grotesk', sans-serif",
+                              fontSize: 15,
+                              fontWeight: 600,
+                              color: part.included ? "#e8eaf0" : "#4a5580",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}>
+                              {part.name}
+                            </div>
+                            <div style={{ display: "flex", gap: 10, marginTop: 4, flexWrap: "wrap", alignItems: "center" }}>
+                              {part.manufacturer && (
+                                <span style={{ fontSize: 11, color: "#4a6a8a" }}>{part.manufacturer}</span>
+                              )}
+                              {part.type && (
+                                <span style={{ fontSize: 11, color: "#2a4a6a" }}>
+                                  {part.manufacturer ? "· " : ""}{part.type}
+                                </span>
+                              )}
+                              {part.category && (
+                                <span style={{
+                                  fontSize: 10,
+                                  color: "#FFB703",
+                                  background: "#1a1400",
+                                  border: "1px solid #2a2000",
+                                  borderRadius: 3,
+                                  padding: "1px 6px",
+                                  letterSpacing: 0.5,
+                                }}>{part.category}</span>
+                              )}
+                              {part.link && (
+                                <a
+                                  href={part.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    fontSize: 10,
+                                    color: "#00B4D8",
+                                    background: "#001a28",
+                                    border: "1px solid #002a3a",
+                                    borderRadius: 3,
+                                    padding: "1px 7px",
+                                    textDecoration: "none",
+                                    letterSpacing: 0.5,
+                                  }}
+                                >
+                                  ↗ View Part
+                                </a>
+                              )}
+                            </div>
+                          </div>
 
-                {/* Actions */}
-                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                  <button
-                    className="cp-icon-btn"
-                    title="Edit"
-                    onClick={() => openEditForm(part)}
-                    style={{
-                      background: "transparent",
-                      border: "1px solid #1e2d4a",
-                      borderRadius: 5,
-                      color: "#4a5580",
-                      cursor: "pointer",
-                      width: 30,
-                      height: 30,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 14,
-                    }}
-                  >
-                    ✎
-                  </button>
-                  <button
-                    className="cp-icon-btn del"
-                    title="Delete"
-                    onClick={() => deleteItem(part.id)}
-                    style={{
-                      background: "transparent",
-                      border: "1px solid #1e2d4a",
-                      borderRadius: 5,
-                      color: "#4a5580",
-                      cursor: "pointer",
-                      width: 30,
-                      height: 30,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 14,
-                    }}
-                  >
-                    ✕
-                  </button>
+                          {/* Price */}
+                          <div style={{
+                            fontFamily: "'Space Grotesk', sans-serif",
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: part.included ? "#00B4D8" : "#2a3a5a",
+                            textDecoration: part.included ? "none" : "line-through",
+                            flexShrink: 0,
+                            whiteSpace: "nowrap",
+                          }}>
+                            {fmt(part.price)}
+                          </div>
+
+                          {/* Actions */}
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            <button
+                              className="cp-icon-btn"
+                              title="Edit"
+                              onClick={() => openEditForm(part)}
+                              style={{
+                                background: "transparent",
+                                border: "1px solid #1e2d4a",
+                                borderRadius: 5,
+                                color: "#4a5580",
+                                cursor: "pointer",
+                                width: 30,
+                                height: 30,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 14,
+                              }}
+                            >
+                              ✎
+                            </button>
+                            <button
+                              className="cp-icon-btn del"
+                              title="Delete"
+                              onClick={() => deleteItem(part.id)}
+                              style={{
+                                background: "transparent",
+                                border: "1px solid #1e2d4a",
+                                borderRadius: 5,
+                                color: "#4a5580",
+                                cursor: "pointer",
+                                width: 30,
+                                height: 30,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: 14,
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
 
         {/* Footer note */}
         {parts.length > 0 && (
           <div style={{ color: "#2a3a5a", fontSize: 11, textAlign: "center", marginTop: 28, letterSpacing: 0.5 }}>
-            Toggle the switch on each row to include or exclude it from the running total
+            Toggle the switch to include or exclude · Drag the ⠿ handle to reorder
           </div>
         )}
       </div>

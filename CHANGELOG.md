@@ -5,6 +5,15 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v1.2.0] — 2025-05-11
+
+### Added
+- **Drag-and-drop reordering** - items can not be reordered by dragging  the ⠿ handle on the left side of each card.
+- Added @hello-pangea/dnd as a dependency (React 19-compatible fork of react-beautiful-dnd).
+
+### Changed
+- Footer hint updated to reflect the new drag handle alongside the existing toggle instruction.
+
 ## [v1.1.0] — 2025-05-11
 
 ### Added
