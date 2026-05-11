@@ -15,7 +15,7 @@ export default function CarTaskPricer() {
   const [parts, setParts] = useState(() => loadParts());
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ name: "", price: "", manufacturer: "", type: "" });
+  const [form, setForm] = useState({ name: "", price: "", manufacturer: "", type: "", category: "", link: "" });
   const [errors, setErrors] = useState({});
   const nameRef = useRef(null);
 
@@ -43,7 +43,7 @@ export default function CarTaskPricer() {
 
   const openAddForm = () => {
     setEditId(null);
-    setForm({ name: "", price: "", manufacturer: "", type: "" });
+    setForm({ name: "", price: "", manufacturer: "", type: "", category: "", link: "" });
     setErrors({});
     setShowForm(true);
   };
@@ -55,6 +55,8 @@ export default function CarTaskPricer() {
       price: String(part.price),
       manufacturer: part.manufacturer || "",
       type: part.type || "",
+      category: part.category || "",
+      link: part.link || "",
     });
     setErrors({});
     setShowForm(true);
@@ -77,7 +79,7 @@ export default function CarTaskPricer() {
       setParts((prev) =>
         prev.map((p) =>
           p.id === editId
-            ? { ...p, name: form.name.trim(), price, manufacturer: form.manufacturer.trim(), type: form.type.trim() }
+            ? { ...p, name: form.name.trim(), price, manufacturer: form.manufacturer.trim(), type: form.type.trim(), category: form.category.trim(), link: form.link.trim() }
             : p
         )
       );
@@ -90,6 +92,8 @@ export default function CarTaskPricer() {
           price,
           manufacturer: form.manufacturer.trim(),
           type: form.type.trim(),
+          category: form.category.trim(),
+          link: form.link.trim(),
           included: true,
         },
       ]);
@@ -360,6 +364,53 @@ export default function CarTaskPricer() {
                   }}
                 />
               </div>
+
+              {/* Category */}
+              <div>
+                <label style={{ color: "#4a5580", fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", display: "block", marginBottom: 5 }}>
+                  Category
+                </label>
+                <input
+                  className="cp-input"
+                  value={form.category}
+                  onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                  placeholder="e.g. Engine, Exterior, Interior"
+                  style={{
+                    width: "100%",
+                    background: "#0a1020",
+                    border: "1px solid #1e2d4a",
+                    borderRadius: 5,
+                    color: "#e8eaf0",
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 12,
+                    padding: "8px 12px",
+                  }}
+                />
+              </div>
+
+              {/* Link — full width */}
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ color: "#4a5580", fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase", display: "block", marginBottom: 5 }}>
+                  Link to Part
+                </label>
+                <input
+                  className="cp-input"
+                  value={form.link}
+                  onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
+                  placeholder="https://..."
+                  type="url"
+                  style={{
+                    width: "100%",
+                    background: "#0a1020",
+                    border: "1px solid #1e2d4a",
+                    borderRadius: 5,
+                    color: "#e8eaf0",
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 12,
+                    padding: "8px 12px",
+                  }}
+                />
+              </div>
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
@@ -471,7 +522,7 @@ export default function CarTaskPricer() {
                   }}>
                     {part.name}
                   </div>
-                  <div style={{ display: "flex", gap: 10, marginTop: 3, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 10, marginTop: 4, flexWrap: "wrap", alignItems: "center" }}>
                     {part.manufacturer && (
                       <span style={{ fontSize: 11, color: "#4a6a8a" }}>{part.manufacturer}</span>
                     )}
@@ -479,6 +530,37 @@ export default function CarTaskPricer() {
                       <span style={{ fontSize: 11, color: "#2a4a6a" }}>
                         {part.manufacturer ? "· " : ""}{part.type}
                       </span>
+                    )}
+                    {part.category && (
+                      <span style={{
+                        fontSize: 10,
+                        color: "#FFB703",
+                        background: "#1a1400",
+                        border: "1px solid #2a2000",
+                        borderRadius: 3,
+                        padding: "1px 6px",
+                        letterSpacing: 0.5,
+                      }}>{part.category}</span>
+                    )}
+                    {part.link && (
+                      <a
+                        href={part.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          fontSize: 10,
+                          color: "#00B4D8",
+                          background: "#001a28",
+                          border: "1px solid #002a3a",
+                          borderRadius: 3,
+                          padding: "1px 7px",
+                          textDecoration: "none",
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        ↗ View Part
+                      </a>
                     )}
                   </div>
                 </div>
