@@ -5,6 +5,13 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v1.4.0] — 2025-05-13
+
+### Added
+- Export to Excel button in the header — exports the full parts list as a dated `.xlsx` file (`integra-parts-YYYY-MM-DD.xlsx`). Includes all fields: Name, Manufacturer, Type/Description, Category, Price, Link, and Status (Active/Excluded/Purchased). Button is disabled when the list is empty. Uses SheetJS (`xlsx` library).
+
+---
+
 ## [v1.3.0] — 2025-05-11
 
 ### Added

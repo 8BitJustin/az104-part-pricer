@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import * as XLSX from "xlsx";
 
 const STORAGE_KEY = "car-task-pricer-parts";
 
@@ -41,6 +42,38 @@ export default function CarTaskPricer() {
 
   const fmt = (n) =>
     "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+
+  const exportToExcel = () => {
+    const rows = parts.map((p) => ({
+      Name: p.name,
+      Manufacturer: p.manufacturer || "",
+      "Type / Description": p.type || "",
+      Category: p.category || "",
+      Price: p.price,
+      Status: p.purchased ? "Purchased" : p.included ? "Active" : "Excluded",
+      Link: p.link || "",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Column widths
+    ws["!cols"] = [
+      { wch: 28 }, // Name
+      { wch: 20 }, // Manufacturer
+      { wch: 24 }, // Type
+      { wch: 16 }, // Category
+      { wch: 12 }, // Price
+      { wch: 12 }, // Status
+      { wch: 40 }, // Link
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Parts List");
+
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `integra-parts-${date}.xlsx`);
+  };
 
   const openAddForm = () => {
     setEditId(null);
@@ -310,9 +343,18 @@ export default function CarTaskPricer() {
           </div>
           <div style={{ color: "#6b7a99", fontSize: 12 }}>Track parts · Toggle included · Mark purchased · See live total</div>
         </div>
-        <button className="cp-add-btn" onClick={openAddForm} style={{ background: "linear-gradient(135deg, #00B4D8, #06D6A0)", border: "none", color: "#000", fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, fontWeight: 600, padding: "10px 20px", borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}>
-          + Add Part
-        </button>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={exportToExcel}
+            disabled={parts.length === 0}
+            style={{ background: "transparent", border: "1px solid #1e3a1a", color: parts.length === 0 ? "#2a3a2a" : "#06D6A0", fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, fontWeight: 600, padding: "10px 18px", borderRadius: 6, cursor: parts.length === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}
+          >
+            ↓ Export Excel
+          </button>
+          <button className="cp-add-btn" onClick={openAddForm} style={{ background: "linear-gradient(135deg, #00B4D8, #06D6A0)", border: "none", color: "#000", fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, fontWeight: 600, padding: "10px 20px", borderRadius: 6, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s" }}>
+            + Add Part
+          </button>
+        </div>
       </div>
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 32px" }}>
